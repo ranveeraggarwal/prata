@@ -42,6 +42,8 @@ export interface Card {
   swedish: string;
   english: string;
   example: string;
+  /** Other accepted Swedish answers (optional column). */
+  alternatives: string[];
 }
 
 export type ExerciseType = "cloze" | "order" | "conjugate" | "translate" | "selfcheck";

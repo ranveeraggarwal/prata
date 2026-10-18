@@ -46,7 +46,7 @@ function cardItem(ref: ItemRef, card: Card): ReviewItem {
     prompt: card.english,
     hint: card.example ? blankWord(card.example, card.swedish) : "",
     answer: card.swedish,
-    alternatives: articleVariants(card.swedish),
+    alternatives: [...card.alternatives, ...articleVariants(card.swedish), ...card.alternatives.flatMap(articleVariants)],
     explanation: card.example,
   };
 }

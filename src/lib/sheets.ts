@@ -12,7 +12,7 @@ import type {
   Text,
 } from "./types";
 
-/** Tab name in the Sheet → columns the app reads from it. */
+/** Tab name in the Sheet → columns the app needs. `cards` may also have an `alternatives` column. */
 export const TABS = {
   texts: ["id", "level", "title", "source", "kind", "part", "body"],
   glossary: ["text_id", "form", "lemma", "english"],
@@ -179,6 +179,7 @@ export function rowsToContent(tables: Tables, syncedAt = new Date().toISOString(
       swedish: r.swedish,
       english: r.english ?? "",
       example: r.example ?? "",
+      alternatives: splitList(r.alternatives),
     }));
 
   const exercises: Exercise[] = [];

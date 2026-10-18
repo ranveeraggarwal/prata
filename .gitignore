@@ -9,3 +9,6 @@ playwright-report/
 # Content extracted from the Swedish Kit is copyrighted in part and must never be committed.
 content/
 *.xlsx
+
+# Python
+__pycache__/

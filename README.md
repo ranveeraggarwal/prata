@@ -31,7 +31,7 @@ One tab per table. The first row holds the column names; extra columns are ignor
 | `texts` | id, level, title, source, kind, part, body | Rows with the same `id` are joined in `part` order, so long texts can stay under Sheets' 50,000-character cell limit. `kind = hjälp` marks reference material; the text with id `samband` is shown as the linking-words helper in Skriv. |
 | `glossary` | text_id, form, lemma, english | Used for tap-to-translate. An empty `text_id` makes the entry apply to every text. |
 | `questions` | text_id, question, options, answer | `answer` is a letter (`b`) or the option text. With no options, the question is open and the answer is shown on request. |
-| `cards` | id, deck, level, swedish, english, example | Reviewed as English → type the Swedish. A word in the example is blanked out as a hint. |
+| `cards` | id, deck, level, swedish, english, example, (alternatives) | Reviewed as English → type the Swedish. A word in the example is blanked out as a hint. The optional `alternatives` column lists other accepted answers. An `en`/`ett` article is never required in an answer. |
 | `exercises` | id, level, topic, type, prompt, answer, alternatives, explanation | `type` is `cloze`, `conjugate`, `translate`, `order` or `selfcheck`. For `order`, separate the word tiles in `answer` with ` / `. |
 | `tests` | test_id, title, level, section, number, question, options, answer | Tests `lund-1` and `lund-2` are used for placement. Passing a test at your level (70%) moves you up a level. For a typed answer, extra accepted answers go after `|`. |
 | `prompts` | id, level, title, task, hints, checklist | With an empty `checklist`, a default grammar checklist for the level is used. |
@@ -58,12 +58,23 @@ Code layout:
 
 ## Importing the Swedish Kit
 
-The scripts in `scripts/import/` turn the Drive folder into a spreadsheet. Run each one with `python3 -I`. They need `curl`, `pdftotext`/`pdftoppm` (poppler), ImageMagick, `heif-convert` and Tesseract with Swedish data (`tesseract-ocr-swe`).
+The scripts in `scripts/import/` turn the Drive folder into a spreadsheet. Run each one with `python3 -I`. They need `curl`, poppler (`pdftotext`, `pdftoppm`), ImageMagick, `heif-convert` (with `libheif-plugin-libde265` for iPhone photos), Tesseract with Swedish data (`tesseract-ocr-swe`), and Python's `openpyxl`, `Pillow` and `numpy`.
 
 ```sh
-python3 -I scripts/import/fetch_drive.py <folder-id> <data-dir>   # download everything
-python3 -I scripts/import/extract_text.py <data-dir>              # dedupe + text/OCR
-python3 -I scripts/import/build_sheet.py <data-dir> <out.xlsx>    # tables + review report
+python3 -I scripts/import/fetch_drive.py <folder-id> <data-dir>   # download everything (public folder)
+python3 -I scripts/import/extract_text.py <data-dir>              # dedupe + text / OCR (re-runnable)
+python3 -I scripts/import/build_sheet.py <data-dir> <out.xlsx>    # tables + <out>.report.md
 ```
+
+`build_sheet.py` does the following:
+
+- Groups the level screenshots into lessons and keeps the reference pages.
+- Reads the Lund and Berlitz tests with their answer keys. The Berlitz scans are OCR'd one column at a time, and their listening part is turned into reading using the transcripts.
+- Turns the Rivstart progress tests and their answer key into exercises.
+- Builds word cards and a glossary from the kit's word lists, and generates verb-form drills.
+- Splits the long PDFs into readable texts: the culture essays, the civics material, the easy-Swedish election guide, the novels and the scanned textbooks.
+- Writes everything as plain-text cells, plus a report listing what it skipped and why.
+
+Upload the `.xlsx` to Google Drive, open it with Google Sheets and publish it (see **Using it**).
 
 Parts of the kit are copyrighted: textbooks, worksheets marked "kopiering förbjuden", and novels. The extracted content is for personal study only. It must never be committed here or published. `content/` and `*.xlsx` are git-ignored for that reason.

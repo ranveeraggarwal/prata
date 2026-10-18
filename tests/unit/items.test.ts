@@ -19,6 +19,10 @@ describe("resolveItem", () => {
     const item = resolveItem({ kind: "card", id: "ord-vakna" }, content, {}, {})!;
     expect(item).toMatchObject({ mode: "type", label: "ord", prompt: "to wake up", answer: "vakna", hint: "Jag ___ tidigt.", explanation: "Jag vaknar tidigt." });
   });
+  it("accepts listed alternatives for a card", () => {
+    const item = resolveItem({ kind: "card", id: "ord-glad" }, content, {}, {});
+    expect(item && item.mode === "type" && item.alternatives).toEqual(["lycklig"]);
+  });
   it("accepts a noun without its article", () => {
     const item = resolveItem({ kind: "card", id: "ord-smorgas" }, content, {}, {});
     expect(item && item.mode === "type" && item.alternatives).toEqual(["smörgås"]);
