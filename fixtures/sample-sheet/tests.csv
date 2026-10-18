@@ -1,0 +1,9 @@
+test_id,title,level,section,number,question,options,answer
+lund-1,Placement test 1 (sample),1,Välj rätt,1,Var bor ___ föräldrar?,din|dina|ditt,b
+lund-1,,1,Välj rätt,2,Han har två ___.,döttrar|dotter|dottern,a
+lund-1,,1,Välj rätt,3,Vill du ___ på frågan?,svarat|svarar|svara,c
+lund-1,,1,Skriv ordet,4,Jag är rädd ___ hundar.,,för
+lund-2,Placement test 2 (sample),2,Välj rätt,1,Jag flyttade ___ för tre år sedan.,hit|här|där,a
+lund-2,,2,Välj rätt,2,Hon är ___ än Kalle.,mer ung|yngst|yngre,c
+berlitz-1,Checkpoint nivå 1 (sample),1,Struktur,1,Varifrån ___?,kommer du|du kommer|arbetar du,a
+berlitz-1,,1,Struktur,2,Linda ___ frukost.,äta|äter|ta,b

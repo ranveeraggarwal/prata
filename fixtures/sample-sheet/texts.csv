@@ -1,0 +1,11 @@
+id,level,title,source,kind,part,body
+morgon,1,En vanlig morgon,Prata sample,berättelse,1,"Anna vaknar klockan sju. Hon dricker kaffe och äter en smörgås.
+
+Sedan cyklar hon till jobbet. Det regnar, men hon är glad."
+loppis,2,På loppis,Prata sample,dialog,1,"Kund: Ursäkta, vad kostar lampan?
+Säljare: Den kostar femtio kronor.
+Kund: Kan jag få den för fyrtio?
+Säljare: Okej, fyrtio kronor. Varsågod!"
+fjallen,3,En vecka i fjällen,Prata sample,berättelse,1,"Förra sommaren vandrade Erik i fjällen i en hel vecka. Han sov i tält och lagade mat över öppen eld."
+fjallen,3,En vecka i fjällen,Prata sample,berättelse,2,"Den sista dagen kom en storm. Eftersom han inte ville bli blöt stannade han i stugan och läste en bok."
+samband,1,Sambandsord,Prata sample,hjälp,1,"först, sedan, till slut, eftersom, därför, men, dessutom, till exempel"

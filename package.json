@@ -1,0 +1,39 @@
+{
+  "name": "prata",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "python3 -m http.server 3000 -d out",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "idb-keyval": "6.2.2",
+    "next": "15.5.28",
+    "papaparse": "5.5.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "ts-fsrs": "5.4.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@tailwindcss/postcss": "4.1.16",
+    "@types/node": "22.18.12",
+    "@types/papaparse": "5.3.16",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "fake-indexeddb": "6.2.4",
+    "jsdom": "27.0.1",
+    "tailwindcss": "4.1.16",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.30"
+    }
+  }
+}

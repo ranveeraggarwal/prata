@@ -1,0 +1,8 @@
+id,level,topic,type,prompt,answer,alternatives,explanation
+prep-1,1,prepositioner,cloze,Boken ligger ___ bordet.,på,,"På: ovanpå en yta."
+prep-2,1,prepositioner,cloze,Katten sover ___ sängen.,under,i|på,
+konj-1,1,verbformer,conjugate,cykla → preteritum,cyklade,,Grupp 1: -ade
+konj-2,2,verbformer,conjugate,gå → supinum,gått,,
+ord-1,2,ordföljd,order,Idag ___,äter / jag / glass.,,Verbet kommer på andra plats.
+trans-1,1,översätt,translate,I drink coffee.,Jag dricker kaffe.,Jag dricker kaffe nu.,
+self-1,2,bisatser,selfcheck,Skriv en mening som börjar med: Jag tror att …,,,"Bisats: subjekt före verb (att han kommer)."
