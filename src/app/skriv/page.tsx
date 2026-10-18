@@ -5,13 +5,15 @@ import { useState } from "react";
 import { useContent } from "@/components/ContentProvider";
 import { ShareButton } from "@/components/ShareButton";
 import { Empty, LevelChips, Loading, Page } from "@/components/ui";
-import { readSlice, useSlice } from "@/lib/progress";
+import { useSlice } from "@/lib/progress";
 import type { Level } from "@/lib/types";
 
 export default function WritePage() {
   const { content, status } = useContent();
   const writing = useSlice("writing");
-  const [level, setLevel] = useState<Level>(() => readSlice("settings").level);
+  const settings = useSlice("settings");
+  const [picked, setLevel] = useState<Level | null>(null);
+  const level = picked ?? settings.level;
 
   if (status === "loading") return <Page title="Skriv"><Loading /></Page>;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useContent } from "@/components/ContentProvider";
 import { Button, Notice } from "@/components/ui";
 import { readSlice, updateSlice } from "@/lib/progress";
@@ -8,8 +8,14 @@ import { TAB_NAMES, type TabName } from "@/lib/sheets";
 
 export function SheetLinkForm({ onSynced, showTabLinks = false }: { onSynced?: (warnings: string[]) => void; showTabLinks?: boolean }) {
   const { sync } = useContent();
-  const [url, setUrl] = useState(() => readSlice("settings").sheetUrl);
-  const [tabUrls, setTabUrls] = useState(() => readSlice("settings").tabUrls);
+  const [url, setUrl] = useState("");
+  const [tabUrls, setTabUrls] = useState<Partial<Record<TabName, string>>>({});
+  // Saved values are read after hydration so the first render matches the static HTML.
+  useEffect(() => {
+    const saved = readSlice("settings");
+    setUrl(saved.sheetUrl);
+    setTabUrls(saved.tabUrls);
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [warnings, setWarnings] = useState<string[]>([]);

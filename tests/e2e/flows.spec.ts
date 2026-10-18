@@ -39,6 +39,24 @@ test("sync problems are shown before moving on", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Hitta din nivå" })).toBeVisible();
 });
 
+test("settings: the saved link can be synced again", async ({ page }) => {
+  await setUp(page);
+  await page.goto("/installningar/");
+  await expect(page.getByLabel("Google Sheet link")).toHaveValue(SHEET_URL);
+  const sync = page.getByRole("button", { name: "Hämta materialet" });
+  await expect(sync).toBeEnabled();
+  await sync.click();
+  await expect(sync).toHaveText("Hämta materialet");
+  await expect(page.getByText(/4 texter · 7 kort/)).toBeVisible();
+});
+
+test("the library opens at the learner's level", async ({ page }) => {
+  await setUp(page, "Nivå 3");
+  await page.goto("/las/");
+  await expect(page.getByRole("tab", { name: "Nivå 3" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("En vecka i fjällen")).toBeVisible();
+});
+
 test("a pasted Publish-to-web link gets a clear explanation", async ({ page }) => {
   await page.goto("/start/");
   await page.getByLabel("Google Sheet link").fill("https://docs.google.com/spreadsheets/d/e/2PACX-1vQabc/pubhtml");

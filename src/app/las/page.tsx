@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { useContent } from "@/components/ContentProvider";
 import { Empty, LevelChips, Loading, Page } from "@/components/ui";
-import { readSlice, useSlice } from "@/lib/progress";
+import { useSlice } from "@/lib/progress";
 import { isReadingText } from "@/lib/session";
 import type { Level } from "@/lib/types";
 
 export default function LibraryPage() {
   const { content, status } = useContent();
   const reading = useSlice("reading");
-  const [level, setLevel] = useState<Level>(() => readSlice("settings").level);
+  const settings = useSlice("settings");
+  const [picked, setLevel] = useState<Level | null>(null);
+  const level = picked ?? settings.level;
 
   if (status === "loading") return <Page title="Läs"><Loading /></Page>;
 
