@@ -243,20 +243,20 @@ DOC_SKIP = {
 
 
 def docs(kit):
-    """One item per distinct Google Doc (the kit holds most of them twice)."""
-    seen = {}
-    for item in kit.items:
-        if item["kind"] != "doc":
-            continue
-        text = kit.text(item).strip()
-        key = (norm_name(doc_title(item)), short_hash(text))
-        if key in seen:
-            continue
-        seen[key] = item
+    """Google Docs by name. The kit holds most of them twice; readers pick the longest copy."""
     by_name = defaultdict(list)
-    for (name, _), item in seen.items():
-        by_name[name].append(item)
+    for item in kit.items:
+        if item["kind"] == "doc":
+            by_name[norm_name(doc_title(item))].append(item)
     return by_name
+
+
+# Docs read by the card, exercise and prompt builders below (not imported as texts).
+CONSUMED_DOCS = {
+    "common slang", "förkortningar", "adjektiv", "verb i olika former", "prepositioner", "hörseln frågor",
+    "hemläxa", "write about a holiday trip", "bokfokus", "jag tycker att det är.._", "olika verb att göra meningar med",
+    "verb i meningar", "very", "tell ask describe and compare activities and things_",
+}
 
 
 def body_of_doc(kit, item):
@@ -270,8 +270,9 @@ def body_of_doc(kit, item):
 
 def add_docs(kit, sheet, docs_by_name):
     for name, items in docs_by_name.items():
-        for item in items:
-            sheet.used.add(item["sha"])
+        if name in DOC_SKIP or name in DOC_TEXTS or name in CONSUMED_DOCS:
+            for item in items:
+                sheet.used.add(item["sha"])
         if name in DOC_SKIP:
             sheet.skipped[DOC_SKIP[name]].append(items[0]["paths"][0])
             continue
@@ -867,6 +868,28 @@ PROMPTS = [
 
 ACTIVITY_PROMPTS_FROM = "tell ask describe and compare activities and things_"
 
+# Homework photos that are a short reading followed by a decision to write about.
+CHOOSE_TASKS = {
+    "barnvakt": ("Vem ska vara barnvakt?", "Läs om de tre barnvakterna. Vem väljer du – och varför inte de andra?"),
+    "anställa till din restaurang": ("Vem ska du anställa?", "Du och dina kompisar öppnar en restaurang. Läs om de sökande. Vem anställer ni, och varför?"),
+    "köpa bil": ("Vem ska hjälpa dig att köpa bil?", "Läs om personerna. Vem ber du om hjälp att köpa en bil, och varför?"),
+    "du behöver hjälp": ("Vem väljer du?", "Läs om personerna. Vem väljer du, och varför?"),
+}
+
+
+def add_homework_readings(kit, sheet):
+    for item in kit.items:
+        name = norm_name(item["name"])
+        if name == "koloniträdgård text" and item["meta"].get("confidence", 0) >= MIN_CONFIDENCE:
+            sheet.add_text("kolonitradgard", 3, "Koloniträdgård", SOURCE, "artikel", clean_ocr(kit.text(item)), item)
+        elif name == "koloniträdgård frågor":
+            sheet.skip(f"Questions with poor OCR (confidence < {MIN_CONFIDENCE}%)", item)
+        elif name in CHOOSE_TASKS and item["meta"].get("confidence", 0) >= MIN_CONFIDENCE - 5:
+            title, task = CHOOSE_TASKS[name]
+            text_id = f"valj-{slug(name)}"
+            sheet.add_text(text_id, 3, title, SOURCE, "läsförståelse", clean_ocr(kit.text(item)), item)
+            sheet.add("prompts", {"id": text_id, "level": 3, "title": title, "task": f"{task} (Texten finns i Läs.)", "hints": ["Jag väljer … eftersom …", "… är bra på …, men …", "Däremot …"], "checklist": []})
+
 
 def add_prompts(kit, sheet, docs_by_name):
     for pid, level, title, task, hints in PROMPTS:
@@ -998,6 +1021,7 @@ def main():
     add_verb_pdf(kit, sheet, glossary)
     add_verbgrupper(kit, sheet, glossary)
 
+    add_homework_readings(kit, sheet)
     add_lessons(kit, sheet)
     add_reference_images(kit, sheet)
     add_small_pdfs(kit, sheet)
@@ -1021,6 +1045,13 @@ def main():
         exercises.append(row)
     sheet.rows["exercises"] = exercises
 
+    for item in kit.items:
+        if any("/Framgångstest/Facit" in p for p in item["paths"]):
+            sheet.skip("Screenshots of the Rivstart answer key (imported from the PDF)", item)
+        elif re.match(r"^läsförståelse", norm_name(item["name"])) and any("/Hemläxa/" in p for p in item["paths"]):
+            sheet.skip("Screenshots of the Berlitz tests (imported from the PDFs)", item)
+        elif norm_name(item["name"]) in ("rätt alternativ (2)", "rätt alternativ2 (2)", "rätt alternativ2", "synonymer", "placement 1"):
+            sheet.skip("Screenshots of the placement tests (imported from the PDFs)", item)
     for name, reason in [
         ("Svenska skrivregler.pdf", "Reference book (Språkrådet's style guide), not reading practice"),
         ("progress tree.pdf", "Picture without text"),
@@ -1030,6 +1061,7 @@ def main():
         ("Small talk all Questions.pdf", "Text layer has lost å/ä/ö"),
         ("Reflexiva Possessiva pronomen.pdf", "Worksheet without answers"),
         ("np-tala.pdf", "Speaking test"),
+        ("Tisus_exempelprov_1.pdf", "Two-column layout under a watermark; the text doesn't come out cleanly"),
     ]:
         for item in kit.items:
             if item["name"] == name:

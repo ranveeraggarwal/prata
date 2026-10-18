@@ -141,6 +141,9 @@ def junk_line(line):
     # Strings of one- and two-letter fragments ("SS fr AEA a 4 i vt") are image noise.
     if len(words) >= 4 and sum(len(w) <= 2 for w in words) / len(words) > 0.7:
         return True
+    # Sideways print read as text ("Teve opueyRB 490 Bej 154v9") has capitals inside words.
+    if sum(1 for w in words if re.search(r"[a-zåäö][A-ZÅÄÖ]", w)) >= 2:
+        return True
     return False
 
 
