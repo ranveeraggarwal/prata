@@ -22,6 +22,19 @@ The site reads each tab as CSV from `…/gviz/tq?tqx=out:csv&headers=1&sheet=<ta
 
 A published Sheet can be read by anyone who has its link. The link is long and random, so nobody can guess it, but don't post it anywhere.
 
+## Hosting
+
+The site is static, so any host that serves a folder over HTTPS works. The setup used here is **Vercel's free plan, deploying from `main`**:
+
+1. Import the GitHub repo in Vercel and keep the defaults: no environment variables, and `BASE_PATH` unset so the site sits at the domain root. Vercel builds with `npm run build` and serves `out/`.
+2. Merging to `main` deploys to production. Every other branch gets its own preview URL.
+3. Keep the repo **public**. Vercel's free plan blocks deployments from private repos unless the commit author is the account owner.
+4. Choose the web address once, before you start using the app. Progress is stored per address, so moving to a new domain starts empty. Use **Mer → Spara backup** first and **Återställ backup** on the new address.
+
+The repo holds no study content (it is git-ignored) and no secrets. The only secret is the Sheet's "Publish to web" link, which lives in your browser. `robots.txt` and a `noindex` tag keep the site out of search results.
+
+Netlify and Cloudflare Pages work the same way: build command `npm run build`, output folder `out`. To serve from a sub-path (GitHub Pages, say), build with `BASE_PATH=/prata`.
+
 ## Sheet format
 
 One tab per table. The first row holds the column names; extra columns are ignored. Lists inside a cell are separated by `|`. Levels run from 1 to 5, where 5 means "real-world Swedish".

@@ -9,6 +9,8 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export const metadata: Metadata = {
   title: "Prata",
   description: "Läs och skriv svenska varje dag.",
+  // A personal study app: keep it out of search results.
+  robots: { index: false, follow: false },
   manifest: `${BASE}/manifest.webmanifest`,
   icons: { icon: `${BASE}/icon-192.png`, apple: `${BASE}/apple-touch-icon.png` },
   appleWebApp: { capable: true, title: "Prata", statusBarStyle: "default" },
