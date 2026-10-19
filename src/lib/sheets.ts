@@ -247,6 +247,14 @@ export function rowsToContent(tables: Tables, syncedAt = new Date().toISOString(
   };
 }
 
+export const SHARE_HINT =
+  "Google didn't let the app read the Sheet. Open it → Share → General access → Anyone with the link → Viewer, then try again.";
+export const PUBLISH_HINT =
+  "Google didn't let the app read one of the tab links. Check that the tab is published to the web as CSV (File → Share → Publish to web), then try again.";
+
+/** The Sheet (or a tab link) is private, so Google refused the request. */
+class AccessError extends Error {}
+
 /** Downloads every tab and converts it. Tabs that fail are reported as warnings. */
 export async function fetchContent(
   source: SheetSource,
@@ -261,32 +269,51 @@ export async function fetchContent(
     );
   }
 
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    throw new Error("You're offline. Connect to the internet to sync.");
+  }
+
   const tables: Tables = {};
   const fetchErrors: string[] = [];
   const fetchFailed = new Set<TabName>();
+  const accessHints = new Set<string>();
   await Promise.all(
     TAB_NAMES.map(async (tab) => {
-      const url = source.tabUrls?.[tab] || (docId ? tabCsvUrl(docId, tab) : "");
+      const perTabUrl = source.tabUrls?.[tab];
+      const url = perTabUrl || (docId ? tabCsvUrl(docId, tab) : "");
       if (!url) return;
       try {
-        const res = await fetchImpl(url);
+        let res: Response;
+        try {
+          res = await fetchImpl(url);
+        } catch {
+          // A private Sheet is answered with a redirect to Google's login page, which the browser
+          // refuses to follow across sites; all it reports is "Failed to fetch".
+          throw new AccessError(perTabUrl ? PUBLISH_HINT : SHARE_HINT);
+        }
+        if (res.status === 401 || res.status === 403) throw new AccessError(perTabUrl ? PUBLISH_HINT : SHARE_HINT);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const body = await res.text();
-        if (/^\s*<(!doctype|html)/i.test(body)) {
-          throw new Error("Google returned a web page instead of CSV — is the Sheet published?");
-        }
+        if (/^\s*<(!doctype|html)/i.test(body)) throw new AccessError(perTabUrl ? PUBLISH_HINT : SHARE_HINT);
         const { header, rows } = parseCsv(body);
         if (looksLikeTab(tab, header)) tables[tab] = rows;
       } catch (err) {
         fetchFailed.add(tab);
-        fetchErrors.push(`Couldn't load tab "${tab}": ${(err as Error).message}`);
+        if (err instanceof AccessError) {
+          accessHints.add(err.message);
+          fetchErrors.push(`Couldn't load tab "${tab}": Google blocked the request.`);
+        } else {
+          fetchErrors.push(`Couldn't load tab "${tab}": ${(err as Error).message}`);
+        }
       }
     }),
   );
 
   if (Object.keys(tables).length === 0) {
     throw new Error(
-      fetchErrors[0] ?? `None of the expected tabs (${TAB_NAMES.join(", ")}) were found in this Sheet.`,
+      [...accessHints][0] ??
+        fetchErrors[0] ??
+        `None of the expected tabs (${TAB_NAMES.join(", ")}) were found in this Sheet.`,
     );
   }
   const result = rowsToContent(tables);

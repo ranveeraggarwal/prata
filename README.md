@@ -6,21 +6,21 @@ A phone-first website for practising **reading and writing Swedish** every day. 
 - **Öva**: spaced-repetition review with typed answers, plus tests with answer keys.
 - **Skriv**: writing tasks with a grammar checklist. Missed checklist points turn into review cards.
 
-The site holds no learning material. Content comes from a Google Sheet you publish, and all progress stays in your browser. There is no server, no account and no AI.
+The site holds no learning material. Content comes from a Google Sheet you share by link, and all progress stays in your browser. There is no server, no account and no AI.
 
 ## Using it
 
 1. Put your content in a Google Sheet with the tabs described below. (`scripts/import/` builds one from the Swedish Kit.)
-2. In Google Sheets: **File → Share → Publish to web → Entire document → Comma-separated values → Publish**.
+2. In Google Sheets click **Share**, set **General access** to **Anyone with the link** and the role to **Viewer**. (The app reads each tab through the Sheet's normal address, which Google serves to Sheets that are shared by link.)
 3. Open the site, tap **Kom igång** and paste the Sheet's normal link (`https://docs.google.com/spreadsheets/d/<id>/edit`).
 4. Take the placement test or pick a level.
 5. On iPhone, add the site to your Home Screen. Safari can delete a website's saved data if you don't open it for a while; Home Screen apps keep theirs.
 
 To pick up changes to the Sheet later, use **Mer → Hämta materialet**. **Mer → Spara backup** downloads your progress as a JSON file. Restore it on the same or another phone.
 
-The site reads each tab as CSV from `…/gviz/tq?tqx=out:csv&headers=1&sheet=<tab>`. If that ever fails, paste one "Publish to web" CSV link per tab under **Mer → Advanced**.
+The site reads each tab as CSV from `…/gviz/tq?tqx=out:csv&headers=1&sheet=<tab>`. If you would rather not share the Sheet by link, publish each tab to the web instead (File → Share → Publish to web → pick a tab → Comma-separated values) and paste one CSV link per tab under **Mer → Advanced**.
 
-A published Sheet can be read by anyone who has its link. The link is long and random, so nobody can guess it, but don't post it anywhere.
+A Sheet shared with "Anyone with the link" can be read by anyone who has the link. The link is long and random, so nobody can guess it, but don't post it anywhere. If the app says "Google didn't let the app read the Sheet" (the browser itself only says "Failed to fetch"), the Sheet is still private: check the sharing setting.
 
 ## Hosting
 
@@ -31,7 +31,7 @@ The site is static, so any host that serves a folder over HTTPS works. The setup
 3. Keep the repo **public**. Vercel's free plan blocks deployments from private repos unless the commit author is the account owner.
 4. Choose the web address once, before you start using the app. Progress is stored per address, so moving to a new domain starts empty. Use **Mer → Spara backup** first and **Återställ backup** on the new address.
 
-The repo holds no study content (it is git-ignored) and no secrets. The only secret is the Sheet's "Publish to web" link, which lives in your browser. `robots.txt` and a `noindex` tag keep the site out of search results.
+The repo holds no study content (it is git-ignored) and no secrets. The only secret is the Sheet's link, which lives in your browser. `robots.txt` and a `noindex` tag keep the site out of search results.
 
 Netlify and Cloudflare Pages work the same way: build command `npm run build`, output folder `out`. To serve from a sub-path (GitHub Pages, say), build with `BASE_PATH=/prata`.
 
@@ -88,6 +88,6 @@ python3 -I scripts/import/build_sheet.py <data-dir> <out.xlsx>    # tables + <ou
 - Splits the long PDFs into readable texts: the culture essays, the civics material, the easy-Swedish election guide, the novels and the scanned textbooks.
 - Writes everything as plain-text cells, plus a report listing what it skipped and why.
 
-Upload the `.xlsx` to Google Drive, open it with Google Sheets and publish it (see **Using it**).
+Upload the `.xlsx` to Google Drive, open it with Google Sheets and share it by link (see **Using it**).
 
 Parts of the kit are copyrighted: textbooks, worksheets marked "kopiering förbjuden", and novels. The extracted content is for personal study only. It must never be committed here or published. `content/` and `*.xlsx` are git-ignored for that reason.

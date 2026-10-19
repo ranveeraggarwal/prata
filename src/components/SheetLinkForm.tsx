@@ -58,8 +58,9 @@ export function SheetLinkForm({ onSynced, showTabLinks = false }: { onSynced?: (
         <details className="rounded-xl border border-line p-3 text-sm">
           <summary className="cursor-pointer font-medium">Advanced: one CSV link per tab</summary>
           <p className="my-2 text-muted">
-            Only needed if syncing with the Sheet link fails. In Google Sheets use File → Share → Publish to web, pick a
-            tab and &quot;Comma-separated values&quot;, then paste each link here.
+            For a Sheet you don&apos;t want to share by link. Publish each tab to the web instead (File → Share →
+            Publish to web → pick a tab → &quot;Comma-separated values&quot;) and paste its link here. The main link
+            above needs the Sheet to be shared by link.
           </p>
           <div className="space-y-2">
             {TAB_NAMES.map((tab) => (

@@ -35,10 +35,12 @@ function Start() {
           <ol className="list-decimal space-y-1.5 pl-5">
             <li>Open your content Sheet in Google Sheets.</li>
             <li>
-              File → Share → <strong>Publish to web</strong> → Entire document → Comma-separated values → Publish.
+              Click <strong>Share</strong>. Under General access choose <strong>Anyone with the link</strong> and set
+              the role to <strong>Viewer</strong> (not Editor).
             </li>
             <li>Copy the Sheet&apos;s normal link from the address bar and paste it below.</li>
           </ol>
+          <p className="mt-3 text-muted">Anyone who has the link can read the Sheet, so keep it to yourself.</p>
         </Panel>
         <SheetLinkForm
           onSynced={(warnings) => (warnings.length ? setSyncedWithWarnings(true) : router.push("/start/?step=level"))}

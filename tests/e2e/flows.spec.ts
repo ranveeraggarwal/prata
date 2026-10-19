@@ -57,6 +57,26 @@ test("the library opens at the learner's level", async ({ page }) => {
   await expect(page.getByText("En vecka i fjällen")).toBeVisible();
 });
 
+test("a private Sheet gets the sharing hint, not just 'Failed to fetch'", async ({ page }) => {
+  for (const mode of ["blocked", "refused"] as const) {
+    await page.route("https://docs.google.com/spreadsheets/**", (route) =>
+      mode === "blocked" ? route.abort("failed") : route.fulfill({ status: 401, contentType: "text/html", body: "<html>Sign in</html>" }),
+    );
+    await page.goto("/start/");
+    await page.getByLabel("Google Sheet link").fill(SHEET_URL);
+    await page.getByRole("button", { name: "Hämta materialet" }).click();
+    await expect(page.getByText(/Anyone with the link → Viewer/).last()).toBeVisible();
+    await expect(page.getByText(/Failed to fetch/)).toHaveCount(0);
+    await page.unroute("https://docs.google.com/spreadsheets/**");
+  }
+});
+
+test("the setup steps tell people to share the Sheet by link", async ({ page }) => {
+  await page.goto("/start/");
+  await expect(page.getByText("Anyone with the link").first()).toBeVisible();
+  await expect(page.getByText(/Publish to web/)).toHaveCount(0);
+});
+
 test("a pasted Publish-to-web link gets a clear explanation", async ({ page }) => {
   await page.goto("/start/");
   await page.getByLabel("Google Sheet link").fill("https://docs.google.com/spreadsheets/d/e/2PACX-1vQabc/pubhtml");

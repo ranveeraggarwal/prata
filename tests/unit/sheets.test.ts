@@ -1,5 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { fetchContent, isPublishedLink, looksLikeTab, parseCsv, parseSheetId, rowsToContent, tabCsvUrl } from "@/lib/sheets";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  fetchContent,
+  isPublishedLink,
+  looksLikeTab,
+  parseCsv,
+  parseSheetId,
+  PUBLISH_HINT,
+  rowsToContent,
+  SHARE_HINT,
+  tabCsvUrl,
+} from "@/lib/sheets";
 import { sampleCsv, sampleTables } from "./fixtures";
 
 const SHEET = "https://docs.google.com/spreadsheets/d/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-abc/edit#gid=0";
@@ -94,10 +104,58 @@ describe("fetchContent", () => {
     expect(warnings).toEqual(['Couldn\'t load tab "cards": HTTP 404']);
   });
 
-  it("explains an unpublished Sheet", async () => {
+  const TABS = ["texts", "glossary", "questions", "cards", "exercises", "tests", "prompts"];
+
+  it("explains a Sheet that answers with Google's login page", async () => {
     const html = "<!DOCTYPE html><html>Sign in</html>";
-    const all = Object.fromEntries(["texts", "glossary", "questions", "cards", "exercises", "tests", "prompts"].map((t) => [t, html]));
-    await expect(fetchContent({ sheetUrl: SHEET }, csvFetch(all))).rejects.toThrow(/is the Sheet published/);
+    const all = Object.fromEntries(TABS.map((t) => [t, html]));
+    await expect(fetchContent({ sheetUrl: SHEET }, csvFetch(all))).rejects.toThrow(SHARE_HINT);
+  });
+
+  it("explains a private Sheet: browsers can't follow Google's redirect to the login page", async () => {
+    // This is what fetch does in a browser: it rejects with a bare TypeError.
+    const blocked = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof fetch;
+    await expect(fetchContent({ sheetUrl: SHEET }, blocked)).rejects.toThrow(SHARE_HINT);
+  });
+
+  it("explains a 401 or 403 from Google", async () => {
+    for (const status of [401, 403]) {
+      const refused = (async () => new Response("no", { status })) as typeof fetch;
+      await expect(fetchContent({ sheetUrl: SHEET }, refused)).rejects.toThrow(SHARE_HINT);
+    }
+  });
+
+  it("points at publishing when a per-tab link is refused", async () => {
+    const refused = (async () => new Response("no", { status: 401 })) as typeof fetch;
+    await expect(
+      fetchContent({ tabUrls: { cards: "https://example.com/cards.csv" } }, refused),
+    ).rejects.toThrow(PUBLISH_HINT);
+  });
+
+  it("keeps the other tabs when only one is blocked", async () => {
+    const oneBlocked = (async (input: RequestInfo | URL) => {
+      const tab = new URL(String(input)).searchParams.get("sheet")!;
+      if (tab === "cards") throw new TypeError("Failed to fetch");
+      return new Response(sampleCsv(tab));
+    }) as typeof fetch;
+    const { content, warnings } = await fetchContent({ sheetUrl: SHEET }, oneBlocked);
+    expect(content.texts.length).toBeGreaterThan(0);
+    expect(content.cards).toEqual([]);
+    expect(warnings).toEqual(['Couldn\'t load tab "cards": Google blocked the request.']);
+  });
+
+  describe("offline", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("says so instead of blaming the Sheet", async () => {
+      vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+      const never = (async () => {
+        throw new TypeError("Failed to fetch");
+      }) as typeof fetch;
+      await expect(fetchContent({ sheetUrl: SHEET }, never)).rejects.toThrow(/offline/i);
+    });
   });
 
   it("uses per-tab links when given", async () => {
